@@ -1,4 +1,4 @@
-#Griglia per la visualizzazione di video
+# Griglia per la visualizzazione di video
 
 Semplice progetto in _python_ per visualizzare più video in una griglia.
 
