@@ -4,9 +4,9 @@ Semplice progetto in _python_ per visualizzare più video in una griglia.
 
 Implementato il menu principale in cui è possibile configurare:
 
+- Altezza e larghezza di ogni video;
 - Numero di righe;
 - Numero di colonne;
-- Dimensione della cella (rettangolare) che contiene il video nella griglia;
 - Percorso della cartella per caricare i video. La cartella deve contenere un numero di video pari o maggiore rispetto alle celle della gliglia.
 
 Con il pulsante:
