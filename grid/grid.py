@@ -20,13 +20,22 @@ class GridGui(QWidget):
 
         self.name_window_test = "Test"
         self.name_windom_main = "Grid of videos"
+
+        # Flag window
         self._isTestWindowCreated = False
         self._isMainWindowsCreated = False
+
         self._isStartingVideo = False
 
+        # Size video
+        self._height = None
+        self._width = None
+
+        # Rows and columns of the table
         self._rows = None
         self._columns = None
-        self._resolution = None
+
+        # Manage videos
         self._path = None
         self._videos = []
 
@@ -35,6 +44,12 @@ class GridGui(QWidget):
         self._test_button = QPushButton("Test")
 
         # Label
+        self._height_label = QLabel()
+        self._height_label.setText("Altezza:")
+
+        self._width_label = QLabel()
+        self._width_label.setText("Larghezza:")
+
         self._rows_label = QLabel()
         self._rows_label.setText("Righe:")
 
@@ -48,6 +63,16 @@ class GridGui(QWidget):
         self._size_video_label.setText("Risoluzione:")
 
         # Line edit
+        self._height_box = QLineEdit()
+        self._height_box.setValidator(QIntValidator())
+        self._height_box.setMaxLength(3)
+        self._height_box.textChanged.connect(self.on_change_height)
+
+        self._width_box = QLineEdit()
+        self._width_box.setValidator(QIntValidator())
+        self._width_box.setMaxLength(3)
+        self._width_box.textChanged.connect(self.on_change_width)
+
         self._rows_box = QLineEdit()
         self._rows_box.setValidator(QIntValidator())
         self._rows_box.setMaxLength(2)
@@ -58,11 +83,6 @@ class GridGui(QWidget):
         self._columns_box.setMaxLength(2)
         self._columns_box.textChanged.connect(self.on_change_columns)
 
-        self._size_video_box = QLineEdit()
-        self._size_video_box.setValidator(QIntValidator())
-        self._size_video_box.setMaxLength(3)
-        self._size_video_box.textChanged.connect(self.on_change_size_video)
-
         self._folder_box = QLineEdit()
 
         self._open_folder_action = self._folder_box.addAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon),
@@ -71,9 +91,10 @@ class GridGui(QWidget):
 
         # Form layout
         form = QFormLayout()
+        form.addRow(self._height_label, self._height_box)
+        form.addRow(self._width_label, self._width_box)
         form.addRow(self._rows_label, self._rows_box)
         form.addRow(self._columns_label, self._columns_box)
-        form.addRow(self._size_video_label, self._size_video_box)
         form.addRow(self._folder_label, self._folder_box)
 
         # Buttons layout
@@ -90,7 +111,7 @@ class GridGui(QWidget):
 
         self.resize(400, 150)
         self.setWindowTitle("Videos")
-        self.setWindowIcon(QtGui.QIcon("icon.jpg"))
+        self.setWindowIcon(QtGui.QIcon("resources/icon.jpg"))
 
         self._start_button.clicked.connect(self.on_start)
         self._test_button.clicked.connect(self.on_test)
@@ -108,6 +129,32 @@ class GridGui(QWidget):
 
         if self._path:
             print(f"[SETTING PATH] {self._path.path()}")
+
+    @Slot()
+    def on_change_height(self):
+        self.destroyWindow()
+        text = self._height_box.text()
+
+        self._height = None
+        if text:
+            number = int(text)
+            if number != 0:
+                self._height = number
+
+        print(f"[ON CHANGE HEIGHT]: {self._height}")
+
+    @Slot()
+    def on_change_width(self):
+        self.destroyWindow()
+        text = self._width_box.text()
+
+        self._width = None
+        if text:
+            number = int(text)
+            if number != 0:
+                self._width = number
+
+        print(f"[ON CHANGE WIDTH]: {self._width}")
 
     @Slot()
     def on_change_rows(self):
@@ -136,25 +183,12 @@ class GridGui(QWidget):
         print(f"[ON CHANGE COLUMNS]: {self._columns}")
 
     @Slot()
-    def on_change_size_video(self):
-        self.destroyWindow()
-        text = self._size_video_box.text()
-
-        self._resolution = None
-        if text:
-            resolution = int(text)
-            if resolution != 0:
-                self._resolution = resolution
-
-        print(f"[ON CHANGE SIZE VIDEO]: {self._resolution}")
-
-    @Slot()
     def on_start(self):
         """
         Event start button
         """
 
-        if self._rows and self._columns and self._path and self._resolution:
+        if self._rows and self._columns and self._path and self._height and self._width:
             print("On Start")
 
             self._videos = os.listdir(self._path.path())
@@ -171,17 +205,18 @@ class GridGui(QWidget):
 
                 for column in range(0, self._columns):
                     grid_row = [None for _ in range(0, self._rows)]
+                    dim = (self._width, self._height)
 
                     for row in range(0, self._rows):
                         cap = cv.VideoCapture(self._path.path() + "/" + self._videos[counter])
 
                         if cap.grab():
                             print(f"Load video: {self._videos[counter]}")
-                            grid_row[row] = cv.resize(cap.retrieve()[1], (self._resolution, self._resolution))
+                            grid_row[row] = cv.resize(cap.retrieve()[1], dim)
                             capture[counter] = cap
                         else:
-                            windows = getRandomImageGray(self._resolution)
-                            grid_row[row] = cv.resize(windows, (self._resolution, self._resolution))
+                            windows = getRandomImageGray(dim)
+                            grid_row[row] = cv.resize(windows, dim)
                             capture[counter] = None
                         counter += 1
 
@@ -255,22 +290,23 @@ class GridGui(QWidget):
 
             for row in range(0, self._rows):
                 cap = capture[counter]
+                dim = (self._width, self._height)
                 if cap:
                     if cap.grab():
-                        grid_row[row] = cv.resize(cap.retrieve()[1], (self._resolution, self._resolution))
+                        grid_row[row] = cv.resize(cap.retrieve()[1], dim)
                         capture[counter] = cap
                     else:
                         cap = cv.VideoCapture(self._path.path() + "/" + self._videos[counter])
                         if cap.grab():
-                            grid_row[row] = cv.resize(cap.retrieve()[1], (self._resolution, self._resolution))
+                            grid_row[row] = cv.resize(cap.retrieve()[1], dim)
                             capture[counter] = cap
                         else:
-                            window = getRandomImageGray(self._resolution)
-                            grid_row[row] = cv.resize(window, (self._resolution, self._resolution))
+                            window = getRandomImageGray(dim)
+                            grid_row[row] = cv.resize(window, dim)
                             capture[counter] = None
                 else:
-                    window = getRandomImageGray(self._resolution)
-                    grid_row[row] = cv.resize(window, (self._resolution, self._resolution))
+                    window = getRandomImageGray(dim)
+                    grid_row[row] = cv.resize(window, dim)
                     capture[counter] = None
 
                 counter += 1
@@ -285,7 +321,7 @@ class GridGui(QWidget):
         Event test button
         """
 
-        if self._rows and self._columns and self._resolution:
+        if self._rows and self._columns and self._width and self._height:
             print("On Test")
             self._isTestWindowCreated = True
 
@@ -295,9 +331,11 @@ class GridGui(QWidget):
                 for column in range(0, self._columns):
                     grid_row = [None for _ in range(0, self._rows)]
 
+                    dim = (self._width, self._height)
+
                     for row in range(0, self._rows):
-                        windows = getRandomImageGray(self._resolution)
-                        grid_row[row] = cv.resize(windows, (self._resolution, self._resolution))
+                        windows = getRandomImageGray(dim)
+                        grid_row[row] = cv.resize(windows, dim)
 
                     grid[column] = grid_row
 

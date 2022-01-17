@@ -2,8 +2,9 @@ import cv2 as cv
 import numpy as np
 
 
-def getRandomImageGray(resolution):
-    return np.random.randint(0, 256, resolution * resolution, dtype=np.uint8).reshape(resolution, resolution)
+def getRandomImageGray(dim):
+    width, height = dim
+    return np.random.randint(0, 256, width * height, dtype=np.uint8).reshape(width, height)
 
 def checkIfAllNone(list_of_elem):
     result = True
