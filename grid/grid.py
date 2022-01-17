@@ -6,7 +6,7 @@ from PySide6 import QtGui
 
 import os
 import cv2 as cv
-from utility import stackImages, getRandomImageGray, checkIfAllNone
+from grid.utility import stackImages, getRandomImageGray, checkIfAllNone
 
 ESCAPE = 27
 TAB = 9
@@ -111,7 +111,7 @@ class GridGui(QWidget):
 
         self.resize(400, 150)
         self.setWindowTitle("Videos")
-        self.setWindowIcon(QtGui.QIcon("resources/icon.jpg"))
+        self.setWindowIcon(QtGui.QIcon("../resources/icon.jpg"))
 
         self._start_button.clicked.connect(self.on_start)
         self._test_button.clicked.connect(self.on_test)

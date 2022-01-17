@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtWidgets import QApplication
-from grid import GridGui
+from grid.grid import GridGui
 
 
 
